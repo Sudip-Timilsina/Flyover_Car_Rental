@@ -60,6 +60,9 @@ export const siteSettingsSchema = z.object({
   heroPrimaryCtaHref: z.string().min(1, "Primary CTA link is required"),
   heroSecondaryCtaLabel: z.string().min(1, "Secondary CTA label is required"),
   heroSecondaryCtaHref: z.string().min(1, "Secondary CTA link is required"),
+  navbarLinks: z.string().optional().default("[]"),
+  footerLinks: z.string().optional().default("[]"),
+  socialLinks: z.string().optional().default("[]"),
 });
 
 export const bookingInquirySchema = z.object({

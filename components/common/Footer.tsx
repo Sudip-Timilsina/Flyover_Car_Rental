@@ -1,10 +1,79 @@
+"use client";
+
 import { SITE_CONFIG, ROUTES } from "@/lib/constants";
 import Image from "next/image";
 import Link from "next/link";
 import { Facebook, Instagram, Mail, MapPin, Phone, Twitter } from "lucide-react";
+import { useEffect, useState } from "react";
+
+interface FooterLink {
+  label: string;
+  href: string;
+}
+
+interface SocialLink {
+  name: string;
+  url: string;
+  icon: string;
+}
+
+const DEFAULT_FOOTER_LINKS: FooterLink[] = [
+  { label: "Tours", href: ROUTES.TOURS },
+  { label: "Destinations", href: ROUTES.DESTINATIONS },
+  { label: "Blog", href: ROUTES.BLOG },
+  { label: "About", href: ROUTES.ABOUT },
+  { label: "Admin", href: ROUTES.ADMIN_LOGIN },
+];
 
 export function Footer() {
+  const [footerLinks, setFooterLinks] = useState<FooterLink[]>(DEFAULT_FOOTER_LINKS);
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const whatsappLink = `https://wa.me/${SITE_CONFIG.phone.replace(/\D/g, "")}`;
+
+  useEffect(() => {
+    // Fetch footer and social links from database
+    fetch("/api/admin/site-settings")
+      .then((res) => res.json())
+      .then((data) => {
+        try {
+          const links = data.footerLinks ? JSON.parse(data.footerLinks) : [];
+          if (links.length > 0) {
+            setFooterLinks(links);
+          }
+        } catch (err) {
+          console.error("Failed to parse footer links:", err);
+        }
+
+        try {
+          const socials = data.socialLinks ? JSON.parse(data.socialLinks) : [];
+          setSocialLinks(socials);
+        } catch (err) {
+          console.error("Failed to parse social links:", err);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch footer links:", err);
+      });
+  }, []);
+
+  const getIconComponent = (iconName: string) => {
+    switch (iconName.toLowerCase()) {
+      case "facebook":
+        return Facebook;
+      case "instagram":
+        return Instagram;
+      case "twitter":
+        return Twitter;
+      case "whatsapp":
+      case "phone":
+        return Phone;
+      case "email":
+      case "mail":
+        return Mail;
+      default:
+        return null;
+    }
+  };
 
   return (
     <footer suppressHydrationWarning className="mt-24 border-t border-white/60 bg-slate-950 text-white">
@@ -34,31 +103,13 @@ export function Footer() {
           <div>
             <h4 className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Quick Links</h4>
             <ul className="space-y-3 text-sm text-slate-300">
-              <li>
-                <Link href={ROUTES.TOURS} className="transition hover:text-white">
-                  Tours
-                </Link>
-              </li>
-              <li>
-                <Link href={ROUTES.DESTINATIONS} className="transition hover:text-white">
-                  Destinations
-                </Link>
-              </li>
-              <li>
-                <Link href={ROUTES.BLOG} className="transition hover:text-white">
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link href={ROUTES.ABOUT} className="transition hover:text-white">
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link href={ROUTES.ADMIN_LOGIN} className="transition hover:text-white">
-                  Admin
-                </Link>
-              </li>
+              {footerLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="transition hover:text-white">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -85,18 +136,35 @@ export function Footer() {
           <div className="space-y-4">
             <h4 className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Follow Us</h4>
             <div className="flex items-center gap-3">
-              <a href={whatsappLink} target="_blank" rel="noreferrer" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:-translate-y-0.5 hover:bg-white/10 hover:text-white">
-                <Phone className="h-4 w-4" />
-              </a>
-              <a href="https://www.facebook.com/pickngoanywhere" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:-translate-y-0.5 hover:bg-white/10 hover:text-white">
-                <Facebook className="h-4 w-4" />
-              </a>
-              <a href="#" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:-translate-y-0.5 hover:bg-white/10 hover:text-white">
-                <Instagram className="h-4 w-4" />
-              </a>
-              {/* <a href="#" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:-translate-y-0.5 hover:bg-white/10 hover:text-white">
-                <Twitter className="h-4 w-4" />
-              </a> */}
+              {socialLinks.length > 0 ? (
+                socialLinks.map((social) => {
+                  const Icon = getIconComponent(social.icon);
+                  return (
+                    <a
+                      key={social.name}
+                      href={social.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:-translate-y-0.5 hover:bg-white/10 hover:text-white"
+                      title={social.name}
+                    >
+                      {Icon ? <Icon className="h-4 w-4" /> : <Phone className="h-4 w-4" />}
+                    </a>
+                  );
+                })
+              ) : (
+                <>
+                  <a href={whatsappLink} target="_blank" rel="noreferrer" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:-translate-y-0.5 hover:bg-white/10 hover:text-white">
+                    <Phone className="h-4 w-4" />
+                  </a>
+                  <a href="https://www.facebook.com/pickngoanywhere" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:-translate-y-0.5 hover:bg-white/10 hover:text-white">
+                    <Facebook className="h-4 w-4" />
+                  </a>
+                  <a href="#" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:-translate-y-0.5 hover:bg-white/10 hover:text-white">
+                    <Instagram className="h-4 w-4" />
+                  </a>
+                </>
+              )}
             </div>
           </div>
         </div>

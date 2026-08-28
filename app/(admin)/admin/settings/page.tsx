@@ -4,8 +4,24 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/common/Button";
 import { ImageUploadField } from "@/components/common/ImageUploadField";
-import { Sparkles, LayoutDashboard, Image as ImageIcon, Mail, Phone, MapPin } from "lucide-react";
+import { Sparkles, LayoutDashboard, Image as ImageIcon, Mail, Phone, MapPin, Plus, Trash2, Link as LinkIcon, Share2 } from "lucide-react";
 import { DEFAULT_SITE_SETTINGS, type SiteSettingsValue } from "@/lib/site-settings";
+
+interface NavbarLink {
+  label: string;
+  href: string;
+}
+
+interface FooterLink {
+  label: string;
+  href: string;
+}
+
+interface SocialLink {
+  name: string;
+  url: string;
+  icon: string;
+}
 
 async function parseJsonSafely(response: Response) {
   const contentType = response.headers.get("content-type") || "";
@@ -33,6 +49,11 @@ export default function SiteSettingsPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [formData, setFormData] = useState<SiteSettingsValue>(DEFAULT_SITE_SETTINGS);
+  
+  // Navigation links state
+  const [navbarLinks, setNavbarLinks] = useState<NavbarLink[]>([]);
+  const [footerLinks, setFooterLinks] = useState<FooterLink[]>([]);
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
 
   useEffect(() => {
     fetch("/api/admin/site-settings")
@@ -54,6 +75,25 @@ export default function SiteSettingsPage() {
             logoText: data.logoText || data.siteName || DEFAULT_SITE_SETTINGS.logoText,
             heroImage: data.heroImage && !data.heroImage.endsWith("flyover-logo.jpg") ? data.heroImage : "",
           });
+          
+          // Parse JSON arrays for links
+          try {
+            setNavbarLinks(data.navbarLinks ? JSON.parse(data.navbarLinks) : []);
+          } catch {
+            setNavbarLinks([]);
+          }
+          
+          try {
+            setFooterLinks(data.footerLinks ? JSON.parse(data.footerLinks) : []);
+          } catch {
+            setFooterLinks([]);
+          }
+          
+          try {
+            setSocialLinks(data.socialLinks ? JSON.parse(data.socialLinks) : []);
+          } catch {
+            setSocialLinks([]);
+          }
         }
       })
         .catch((err: any) => setError(err?.message || "Failed to load site settings"))
@@ -67,6 +107,48 @@ export default function SiteSettingsPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleAddNavbarLink = () => {
+    setNavbarLinks([...navbarLinks, { label: "", href: "" }]);
+  };
+
+  const handleUpdateNavbarLink = (index: number, field: "label" | "href", value: string) => {
+    const updated = [...navbarLinks];
+    updated[index][field] = value;
+    setNavbarLinks(updated);
+  };
+
+  const handleRemoveNavbarLink = (index: number) => {
+    setNavbarLinks(navbarLinks.filter((_, i) => i !== index));
+  };
+
+  const handleAddFooterLink = () => {
+    setFooterLinks([...footerLinks, { label: "", href: "" }]);
+  };
+
+  const handleUpdateFooterLink = (index: number, field: "label" | "href", value: string) => {
+    const updated = [...footerLinks];
+    updated[index][field] = value;
+    setFooterLinks(updated);
+  };
+
+  const handleRemoveFooterLink = (index: number) => {
+    setFooterLinks(footerLinks.filter((_, i) => i !== index));
+  };
+
+  const handleAddSocialLink = () => {
+    setSocialLinks([...socialLinks, { name: "", url: "", icon: "" }]);
+  };
+
+  const handleUpdateSocialLink = (index: number, field: "name" | "url" | "icon", value: string) => {
+    const updated = [...socialLinks];
+    updated[index][field] = value;
+    setSocialLinks(updated);
+  };
+
+  const handleRemoveSocialLink = (index: number) => {
+    setSocialLinks(socialLinks.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaving(true);
@@ -77,7 +159,12 @@ export default function SiteSettingsPage() {
       const response = await fetch("/api/admin/site-settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          navbarLinks: JSON.stringify(navbarLinks),
+          footerLinks: JSON.stringify(footerLinks),
+          socialLinks: JSON.stringify(socialLinks),
+        }),
       });
 
       if (!response.ok) {
@@ -197,6 +284,180 @@ export default function SiteSettingsPage() {
                 <span className="rounded-full bg-white/10 px-4 py-2">{formData.heroSecondaryCtaLabel}</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Navbar Links Section */}
+        <div className="rounded-3xl border border-white/70 bg-white p-6 shadow-soft md:p-8">
+          <div className="mb-6 flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white">
+              <LinkIcon className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">Navigation Bar Links</h2>
+              <p className="text-sm text-slate-500">Customize the main navigation menu</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {navbarLinks.map((link, index) => (
+              <div key={index} className="flex gap-4 items-end">
+                <div className="flex-1">
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">Label</label>
+                  <input
+                    type="text"
+                    value={link.label}
+                    onChange={(e) => handleUpdateNavbarLink(index, "label", e.target.value)}
+                    placeholder="e.g., Tours"
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary-400 focus:ring-4 focus:ring-primary-100"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">URL</label>
+                  <input
+                    type="text"
+                    value={link.href}
+                    onChange={(e) => handleUpdateNavbarLink(index, "href", e.target.value)}
+                    placeholder="e.g., /tours"
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary-400 focus:ring-4 focus:ring-primary-100"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveNavbarLink(index)}
+                  className="h-12 rounded-2xl bg-red-50 p-3 text-red-600 hover:bg-red-100 transition"
+                >
+                  <Trash2 className="h-5 w-5" />
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={handleAddNavbarLink}
+              className="inline-flex items-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-400 transition"
+            >
+              <Plus className="h-4 w-4" /> Add Link
+            </button>
+          </div>
+        </div>
+
+        {/* Footer Links Section */}
+        <div className="rounded-3xl border border-white/70 bg-white p-6 shadow-soft md:p-8">
+          <div className="mb-6 flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-600 text-white">
+              <LinkIcon className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">Footer Links</h2>
+              <p className="text-sm text-slate-500">Quick links section in footer</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {footerLinks.map((link, index) => (
+              <div key={index} className="flex gap-4 items-end">
+                <div className="flex-1">
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">Label</label>
+                  <input
+                    type="text"
+                    value={link.label}
+                    onChange={(e) => handleUpdateFooterLink(index, "label", e.target.value)}
+                    placeholder="e.g., About Us"
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary-400 focus:ring-4 focus:ring-primary-100"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">URL</label>
+                  <input
+                    type="text"
+                    value={link.href}
+                    onChange={(e) => handleUpdateFooterLink(index, "href", e.target.value)}
+                    placeholder="e.g., /about"
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary-400 focus:ring-4 focus:ring-primary-100"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveFooterLink(index)}
+                  className="h-12 rounded-2xl bg-red-50 p-3 text-red-600 hover:bg-red-100 transition"
+                >
+                  <Trash2 className="h-5 w-5" />
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={handleAddFooterLink}
+              className="inline-flex items-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-400 transition"
+            >
+              <Plus className="h-4 w-4" /> Add Link
+            </button>
+          </div>
+        </div>
+
+        {/* Social Links Section */}
+        <div className="rounded-3xl border border-white/70 bg-white p-6 shadow-soft md:p-8">
+          <div className="mb-6 flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-600 text-white">
+              <Share2 className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">Social Media Links</h2>
+              <p className="text-sm text-slate-500">Connect with followers on social platforms</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {socialLinks.map((link, index) => (
+              <div key={index} className="grid gap-4 md:grid-cols-3 items-end">
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">Platform Name</label>
+                  <input
+                    type="text"
+                    value={link.name}
+                    onChange={(e) => handleUpdateSocialLink(index, "name", e.target.value)}
+                    placeholder="e.g., Facebook"
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary-400 focus:ring-4 focus:ring-primary-100"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">URL</label>
+                  <input
+                    type="text"
+                    value={link.url}
+                    onChange={(e) => handleUpdateSocialLink(index, "url", e.target.value)}
+                    placeholder="https://facebook.com/..."
+                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary-400 focus:ring-4 focus:ring-primary-100"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <label className="mb-2 block text-sm font-semibold text-slate-700">Icon</label>
+                    <input
+                      type="text"
+                      value={link.icon}
+                      onChange={(e) => handleUpdateSocialLink(index, "icon", e.target.value)}
+                      placeholder="facebook"
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary-400 focus:ring-4 focus:ring-primary-100"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveSocialLink(index)}
+                    className="h-12 rounded-2xl bg-red-50 p-3 text-red-600 hover:bg-red-100 transition"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={handleAddSocialLink}
+              className="inline-flex items-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-slate-400 transition"
+            >
+              <Plus className="h-4 w-4" /> Add Social Link
+            </button>
           </div>
         </div>
 

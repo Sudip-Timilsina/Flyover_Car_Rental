@@ -40,6 +40,9 @@ model SiteSettings {
   heroPrimaryCtaHref    String
   heroSecondaryCtaLabel String
   heroSecondaryCtaHref  String
+  navbarLinks          String   @default("[]") @db.Text
+  footerLinks          String   @default("[]") @db.Text
+  socialLinks          String   @default("[]") @db.Text
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 

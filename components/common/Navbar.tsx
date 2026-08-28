@@ -19,12 +19,25 @@ import {
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/utils/helpers";
 
+interface NavbarLink {
+  label: string;
+  href: string;
+}
+
+const DEFAULT_NAVIGATION = [
+  { href: ROUTES.TOURS, label: "Tours", icon: Compass },
+  { href: ROUTES.DESTINATIONS, label: "Destinations", icon: MapPin },
+  { href: ROUTES.BLOG, label: "Stories", icon: BookOpen },
+  { href: ROUTES.CONTACT, label: "Contact", icon: PhoneCall },
+];
+
 export function Navbar() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [navbarLinks, setNavbarLinks] = useState<NavbarLink[]>(DEFAULT_NAVIGATION);
 
   useEffect(() => {
     setMounted(true);
@@ -38,15 +51,25 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navigation = useMemo(
-    () => [
-      { href: ROUTES.TOURS, label: "Tours", icon: Compass },
-      { href: ROUTES.DESTINATIONS, label: "Destinations", icon: MapPin },
-      { href: ROUTES.BLOG, label: "Stories", icon: BookOpen },
-      { href: ROUTES.CONTACT, label: "Contact", icon: PhoneCall },
-    ],
-    []
-  );
+  useEffect(() => {
+    // Fetch navbar links from database
+    fetch("/api/admin/site-settings")
+      .then((res) => res.json())
+      .then((data) => {
+        try {
+          const links = data.navbarLinks ? JSON.parse(data.navbarLinks) : [];
+          if (links.length > 0) {
+            setNavbarLinks(links);
+          }
+        } catch (err) {
+          // Use default if parsing fails
+          console.error("Failed to parse navbar links:", err);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch navbar links:", err);
+      });
+  }, []);
 
   const toggleTheme = () => {
     const next = !darkMode;
@@ -88,9 +111,8 @@ export function Navbar() {
           </Link>
 
           <div className="hidden lg:flex items-center gap-2 rounded-full border border-white/60 bg-white/75 p-2 shadow-glass backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/70">
-            {navigation.map((item) => {
+            {navbarLinks.map((item) => {
               const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-              const Icon = item.icon;
               return (
                 <Link
                   key={item.href}
@@ -102,7 +124,6 @@ export function Navbar() {
                       : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
                   )}
                 >
-                  {Icon ? <Icon className="h-4 w-4" /> : null}
                   {item.label}
                 </Link>
               );
@@ -149,9 +170,8 @@ export function Navbar() {
           >
             <div className="container-max py-4">
               <div className="grid gap-2">
-                {navigation.map((item) => {
+                {navbarLinks.map((item) => {
                   const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-                  const Icon = item.icon;
                   return (
                     <Link
                       key={item.href}
@@ -165,7 +185,6 @@ export function Navbar() {
                       )}
                     >
                       <span className="flex items-center gap-3">
-                        {Icon ? <Icon className="h-4 w-4" /> : null}
                         {item.label}
                       </span>
                     </Link>

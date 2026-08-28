@@ -59,6 +59,9 @@ export async function PUT(request: Request) {
         heroPrimaryCtaHref: validated.heroPrimaryCtaHref,
         heroSecondaryCtaLabel: validated.heroSecondaryCtaLabel,
         heroSecondaryCtaHref: validated.heroSecondaryCtaHref,
+        navbarLinks: validated.navbarLinks || "[]",
+        footerLinks: validated.footerLinks || "[]",
+        socialLinks: validated.socialLinks || "[]",
       },
       create: {
         id: singletonId,
@@ -77,6 +80,9 @@ export async function PUT(request: Request) {
         heroPrimaryCtaHref: validated.heroPrimaryCtaHref,
         heroSecondaryCtaLabel: validated.heroSecondaryCtaLabel,
         heroSecondaryCtaHref: validated.heroSecondaryCtaHref,
+        navbarLinks: validated.navbarLinks || "[]",
+        footerLinks: validated.footerLinks || "[]",
+        socialLinks: validated.socialLinks || "[]",
       },
     });
 
