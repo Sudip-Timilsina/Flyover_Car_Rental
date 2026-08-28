@@ -14,6 +14,7 @@ import {
   PhoneCall,
   SunMoon,
   MoonStar,
+  LogIn,
 } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/utils/helpers";
@@ -109,6 +110,15 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center gap-2">
+            <Link
+              href={ROUTES.ADMIN_LOGIN}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/70 bg-white/80 px-4 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-soft dark:border-slate-800 dark:bg-slate-900/80 dark:text-white"
+              aria-label="Admin Login"
+            >
+              <LogIn className="h-4 w-4" />
+              <span className="hidden sm:inline">Admin</span>
+            </Link>
+
             <button
               onClick={toggleTheme}
               className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-white/80 text-slate-900 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:shadow-soft dark:border-slate-800 dark:bg-slate-900/80 dark:text-white"
@@ -161,6 +171,16 @@ export function Navbar() {
                     </Link>
                   );
                 })}
+                <Link
+                  href={ROUTES.ADMIN_LOGIN}
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                >
+                  <span className="flex items-center gap-3">
+                    <LogIn className="h-4 w-4" />
+                    Admin
+                  </span>
+                </Link>
               </div>
             </div>
           </motion.div>

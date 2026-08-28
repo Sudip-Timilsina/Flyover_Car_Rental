@@ -54,6 +54,11 @@ export function Footer() {
                   About
                 </Link>
               </li>
+              <li>
+                <Link href={ROUTES.ADMIN_LOGIN} className="transition hover:text-white">
+                  Admin
+                </Link>
+              </li>
             </ul>
           </div>
 
