@@ -5,7 +5,7 @@ export const SITE_CONFIG = {
     "Premium and reliable car rental service in Pokhara.",
   url: process.env.SITE_URL || "http://localhost:3000",
   ogImage: "/uploads/flyover-logo.jpg",
-  email: process.env.CONTACT_EMAIL || "sandeeptimilsina57@gmail.com",
+  email: process.env.CONTACT_EMAIL || "contact@flyovertours.com",
   phone: process.env.CONTACT_PHONE || "9815178051",
   address: process.env.CONTACT_ADDRESS || "Lakeside-6, Pokhara",
 };

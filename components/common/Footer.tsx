@@ -61,15 +61,15 @@ export function Footer() {
           <div className="space-y-4">
             <h4 className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Contact</h4>
             <div className="space-y-3 text-sm text-slate-300">
-              <p className="flex items-center gap-3">
+              <p className="flex items-center gap-3" suppressHydrationWarning>
                 <Mail className="h-4 w-4 text-accent-300" />
                 {SITE_CONFIG.email}
               </p>
-              <p className="flex items-center gap-3">
+              <p className="flex items-center gap-3" suppressHydrationWarning>
                 <Phone className="h-4 w-4 text-accent-300" />
                 {SITE_CONFIG.phone}
               </p>
-              <p className="flex items-start gap-3 leading-6">
+              <p className="flex items-start gap-3 leading-6" suppressHydrationWarning>
                 <MapPin className="mt-0.5 h-4 w-4 text-accent-300" />
                 {SITE_CONFIG.address}
               </p>
